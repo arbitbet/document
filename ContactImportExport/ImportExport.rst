@@ -75,5 +75,12 @@ using method write(array $items).
 Export
 ------
 
+Export process are same Import but in other order, but it don't use Strategy. Looks classes that we used for it:
+
+* **Reader** – ``Oro\Bundle\ImportExportBundle\Reader\EntityReader`` class reads one object
+* **Processor** – ``Oro\Bundle\ImportExportBundle\Processor\ExportProcessor`` class serializes and converts object to dimensional array
+* **Writer** – ``Oro\Bundle\ImportExportBundle\Writer\CsvFileWriter`` class adds all dimensional arrays to CSV file
+* **Serializer** -  ``Oro\Bundle\ImportExportBundle\Serializer\Serializer`` class normalizes each field and converts object to complex array
+* **Data Converter** - ``Oro\Bundle\ImportExportBundle\Converter\ConfigurableTableDataConverter`` class converts complex array to dimensional array
 
 

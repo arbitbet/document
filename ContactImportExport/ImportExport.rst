@@ -83,4 +83,34 @@ Export process are same Import but in other order, but it don't use Strategy. Lo
 * **Serializer** -  ``Oro\Bundle\ImportExportBundle\Serializer\Serializer`` class normalizes each field and converts object to complex array
 * **Data Converter** - ``Oro\Bundle\ImportExportBundle\Converter\ConfigurableTableDataConverter`` class converts complex array to dimensional array
 
+Serializer & Normalizer
+-----------------------
 
+Very important part how we normalize/denormalize relations between entities and other complex data.
+
+``Oro\Bundle\ImportExportBundle\Serializer\Serializer`` class that extends from standard Symfony's serializer 
+and used instead of it to do serialization/deserialization. Has it's own normalizers/denormalizers. Each entity 
+that you want to export/import should be supported by import/export Serializer. It means that you should add normalizers/denormalizers 
+that will take care of converting your entity to array/scalar representation (normalization during serialization) and vice verse 
+converting array to entity object representation (denormalization during deserialization).
+
+That system can convert complex array to object system should use class 
+``Oro\Bundle\ImportExportBundle\Serializer\Normalizer\ConfigurableEntityNormalizer`` and method denormalize:
+
+.. code-block:: php
+
+    if ($data[$fieldName] !== null
+        && ($this->fieldHelper->isRelation($field) || $this->fieldHelper->isDateTimeField($field))
+    ) {
+        if ($this->fieldHelper->isMultipleRelation($field)) {
+            $entityClass = sprintf('ArrayCollection<%s>', $field['related_entity_name']);
+        } elseif ($this->fieldHelper->isSingleRelation($field)) {
+            $entityClass = $field['related_entity_name'];
+        } else {
+            $entityClass = 'DateTime';
+        }
+        $context = array_merge($context, ['fieldName' => $fieldName]);
+        $value = $this->serializer->denormalize($value, $entityClass, $format, $context);
+    }
+
+You can see if value is don't scalar(may be collection, datetime or entity) than method call denormalize for this value.

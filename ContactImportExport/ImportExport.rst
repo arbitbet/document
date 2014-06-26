@@ -151,4 +151,105 @@ You can setup values:
 * excluded - if true skip this field in export
 * short - if true normalize method returns only identity fields of relation entity(ies) 
 
+Extension of import/export contacts
+-----------------------------------
+
+Changing the example import template file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To change the import template file, you can do it in the class ``OroCRM\Bundle\ContactBundle\ImportExport\TemplateFixture\ContactFixture``. 
+
+Extension import / export operations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To change the format of the exported CSV file you need to make class ``OroCRM\Bundle\ContactBundle\ImportExport\Reader\CsvFileReader`` 
+extends from  ``Oro\Bundle\ImportExportBundle\Reader\CsvFileReader``. 
+
+You can override the settings:
+
+.. code-block:: php
+
+    protected $delimiter = ','; 
+    protected $enclosure = '"'; 
+    protected $escape = '\ \'; 
+    protected $firstLineIsHeader = true; 
+
+For example, you can change delimiter with ',' on ';': «protected $ delimiter = ';';». Similarly, you can extend class CsvFileWriter.
+
+Adding a new provider that to read/write data from/to files in other formats
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To write your own provider for import operation, you should create the class that inherits 
+from ``Oro\Bundle\ImportExportBundle\Reader\AbstractReader``. For example ``OroCRM\Bundle\ContactBundle\ImportExport\Reader\ExcelFileReader``. 
+In the case of export, you just need to create a new class that uses the interface ``Akeneo\Bundle\BatchBundle\Item\ItemWriterInterface``.
+New classes must declare the file as services OroCRM/Bundle/ContactBundle/Resources/config/importexport.yml:
+
+.. code-block:: yaml
+
+    parameters:
+        oro_importexport.reader.csv.class: OroCRM \ Bundle \ ContactBundle \ ImportExport \ Reader \ ExcelFileReader
+        oro_importexport.writer.csv.class: OroCRM \ Bundle \ ContactBundle \ ImportExport \ Writer \ ExcelFileWriter
+
+    services:
+        oro_importexport.reader.csv:
+            class:% oro_importexport.reader.csv.class%
+
+        oro_importexport.writer.csv:
+            class:% oro_importexport.writer.csv.class%
+
+Changing strategy
+^^^^^^^^^^^^^^^^^^
+
+**OroCRMContactBundle** has one strategy "addition or substitution" to import data, is responsible for the class 
+``OroCRM\Bundle\ContactBundle\ImportExport\Strategy\ContactAddOrReplaceStrategy`` that inherits from 
+``Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy``. You can override the process of updating 
+or adding and finding records that need to be replaced in the methods:
+
+* public function process ($ entity)
+* protected function processEntity ($ entity, $ isFullData = false, $ isPersistNew = false)
+* protected function updateRelations ($ entity, array $ fields)
+* protected function findExistingEntity ($ entity, array $ fields).
+
+You can extend the existing process ContactAddOrReplaceStrategy, for example:
+
+.. code-block:: php
+
+    public function process ($ entity)
+    {
+        $ Entity = parent :: process ($ entity);
+
+        if ($ entity) {
+            $ This
+                -> UpdateAddresses ($ entity);
+        }
+
+        return $ entity;
+    }
+
+Adding strategy
+^^^^^^^^^^^^^^^
+
+You can add a new strategy you should create a new class, for example 
+``OroCRM\Bundle\ContactBundle\ImportExport\Strategy\ContactAddOrUpdateOrDeleteStrategy``, which uses interfaces: 
+``Oro\Bundle\ImportExportBundle\Strategy\StrategyInterface``, ``Oro\Bundle\ImportExportBundle\Context\ContextInterface`` 
+and ``Oro\Bundle\ImportExportBundle\Processor\EntityNameAwareInterface``.
+
+Strategy class is also responsible for data validation in the method ``validateAndUpdateContext($entity)`` when you import contacts. 
+Created class must declare as a service in the file ``OroCRM/Bundle/ContactBundle/Resources/config/importexport.yml``:
+
+.. code-block:: yaml
+
+    parameters:
+        orocrm_contact.importexport.strategy.contact.class: OroCRM \ Bundle \ ContactBundle \ ImportExport \ Strategy \ ContactAddOrUpadteOrDeleteStrategy
+
+    services:
+
+        orocrm_contact.importexport.strategy.contact.add_or_replace:
+            class:% orocrm_contact.importexport.strategy.contact.class%
+            parent: oro_importexport.strategy.configurable_add_or_replace
+            calls:
+                - [SetRegistry, [@ doctrine]]
+
+For more information about OroImportExportBundle you can view 
+`documentation <https://github.com/orocrm/platform/blob/master/src/Oro/Bundle/ImportExportBundle/Resources/doc/index.md>`_.
 

@@ -219,7 +219,7 @@ You can extend the existing process ContactAddOrReplaceStrategy, for example:
         $Entity = parent::process($entity);
 
         if ($entity) {
-            $This
+            $this
                 ->UpdateAddresses($entity);
         }
 

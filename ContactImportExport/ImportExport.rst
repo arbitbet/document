@@ -113,4 +113,42 @@ That system can convert complex array to object system should use class
         $value = $this->serializer->denormalize($value, $entityClass, $format, $context);
     }
 
-You can see if value is don't scalar(may be collection, datetime or entity) than method call denormalize for this value.
+You can see if value is don't scalar(may be collection, datetime or entity) than method call
+recursion denormalize method for this value. We don't have recursion circle if entities has relation circle it is checked in Data Converter.
+
+Also platform has normalizers: Oro\Bundle\ImportExportBundle\Serializer\Normalizer\DateTimeNormalizer, 
+Oro\Bundle\ImportExportBundle\Serializer\Normalizer\CollectionNormalizer. Other types are scalar and don't need normalizers.
+
+That platform convert entity to complex array, platform uses method normolize from 
+class Oro\Bundle\ImportExportBundle\Serializer\Normalizer\ConfigurableEntityNormalizer. Method use Fields Helper to take 
+fields and them configure. Method check field configure. If field is excluded then skip field. 
+If field is object of another entity or collection then method call normalize method for this type of object. 
+If field is scalar method add field value to array. Method return complex array of entity values.
+
+You can setup import/export configure for field into UI  System/Entities/Entity Management. 
+Or you can setup by default in entity annotations:
+
+.. code-block:: php
+
+     # OroCRM/Bundle/ContactBundle/Entity/Contact.php
+     
+     ...
+     
+     * @ConfigField(
+     *      defaultValues={
+     *          "importexport"={
+     *              "order"=200,
+     *              "short"=true
+     *          }
+     *      }
+     
+     ...
+
+You can setup values:
+
+* identity - if true field is part of key that to identifier instance of entity
+* order - number of field place in export
+* excluded - if true skip this field in export
+* short - if true normalize method returns only identity fields of relation entity(ies) 
+
+

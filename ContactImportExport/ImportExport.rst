@@ -214,16 +214,16 @@ You can extend the existing process ContactAddOrReplaceStrategy, for example:
 
 .. code-block:: php
 
-    public function process ($ entity)
+    public function process($entity)
     {
-        $ Entity = parent :: process ($ entity);
+        $Entity = parent::process($entity);
 
-        if ($ entity) {
-            $ This
-                -> UpdateAddresses ($ entity);
+        if ($entity) {
+            $This
+                ->UpdateAddresses($entity);
         }
 
-        return $ entity;
+        return $entity;
     }
 
 Adding strategy

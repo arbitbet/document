@@ -1,4 +1,4 @@
-Import/Export contacts in OroCRM
+Extract information from Entities or other Sources using OroImportExportBundle
 ====================================
 
 **OroImportExportBundle** intended for import / export entities in the Oro Platform. **OroImportExportBundle** uses **OroBatchBundle** 
